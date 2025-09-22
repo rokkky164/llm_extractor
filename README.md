@@ -1,4 +1,4 @@
-Setup & Run Instructions
+### Setup & Run Instructions
 
 Clone and install dependencies
 
@@ -30,7 +30,7 @@ Start the server
 python manage.py runserver
 
 
-Test the API
+### Test the API
 
 POST /api/analyze → Analyze new text
 Example:

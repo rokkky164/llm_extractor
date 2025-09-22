@@ -5,28 +5,37 @@ from .models import Analysis
 from .serializers import AnalysisSerializer
 from .utils import extract_keywords, analyze_with_llm
 
+
 @api_view(["POST"])
 def analyze(request):
-    text = request.data.get("text", "").strip()
-    if not text:
-        return Response({"error": "Input text is empty"}, status=400)
+    texts = request.data.get("texts")  # batch support
+    if not texts:
+        single_text = request.data.get("text", "").strip()
+        if not single_text:
+            return Response({"error": "Input text is empty"}, status=400)
+        texts = [single_text]
 
-    keywords = extract_keywords(text)
-    llm_result = analyze_with_llm(text)
+    results = []
+    for text in texts:
+        keywords = extract_keywords(text)
+        llm_result = analyze_with_llm(text)
+        if "error" in llm_result:
+            results.append({"text": text, "error": llm_result["error"]})
+            continue
 
-    if "error" in llm_result:
-        return Response({"error": llm_result["error"]}, status=500)
+        confidence = compute_confidence(llm_result)
 
-    analysis = Analysis.objects.create(
-        text=text,
-        summary=llm_result["summary"],
-        title=llm_result.get("title"),
-        topics=llm_result["topics"],
-        sentiment=llm_result["sentiment"],
-        keywords=keywords,
-    )
-    serializer = AnalysisSerializer(analysis)
-    return Response(serializer.data, status=201)
+        analysis = Analysis.objects.create(
+            text=text,
+            summary=llm_result["summary"],
+            title=llm_result.get("title"),
+            topics=llm_result["topics"],
+            sentiment=llm_result["sentiment"],
+            keywords=keywords,
+            confidence=confidence
+        )
+        results.append(AnalysisSerializer(analysis).data)
+    return Response(results, status=201)
 
 
 @api_view(["GET"])
@@ -40,3 +49,8 @@ def search(request):
     )
     serializer = AnalysisSerializer(analyses, many=True)
     return Response(serializer.data)
+
+
+def compute_confidence(data):
+    score = len(data.get("topics", [])) * 0.3 + min(len(data.get("summary", "")) / 100, 1) * 0.7
+    return round(score, 2)

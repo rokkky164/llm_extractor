@@ -39,3 +39,15 @@ Example:
 
 
 GET /api/search?topic=openai → Search analyses by topic/keyword
+
+
+### Batch Processing
+
+- POST multiple texts at once:
+```json
+{
+  "texts": [
+    "First text about AI.",
+    "Second text about Python."
+  ]
+}

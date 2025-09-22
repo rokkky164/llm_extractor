@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -26,7 +27,7 @@ def analyze(request):
         confidence = compute_confidence(llm_result)
 
         analysis = Analysis.objects.create(
-            text=text,
+            text=text,  
             summary=llm_result["summary"],
             title=llm_result.get("title"),
             topics=llm_result["topics"],
@@ -45,7 +46,7 @@ def search(request):
         return Response({"error": "Missing topic query"}, status=400)
 
     analyses = Analysis.objects.filter(
-        models.Q(topics__icontains=topic) | models.Q(keywords__icontains=topic)
+        Q(topics__icontains=topic) | Q(keywords__icontains=topic)
     )
     serializer = AnalysisSerializer(analyses, many=True)
     return Response(serializer.data)

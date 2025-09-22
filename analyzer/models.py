@@ -3,7 +3,8 @@ from django.db.models import (
     TextField,
     CharField,
     JSONField,
-    DateTimeField
+    DateTimeField,
+    FloatField
 )
 from django.utils import timezone
 

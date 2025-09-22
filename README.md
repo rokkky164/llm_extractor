@@ -9,7 +9,7 @@ pip install -r requirements.txt
 
 Install NLTK corpora (first run only)
 
-python -m nltk.downloader punkt averaged_perceptron_tagger
+python -m nltk.downloader punkt averaged_percewptron_tagger
 
 
 Configure environment
